@@ -1,0 +1,81 @@
+
+.grid {
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    border: black;
+    border-width: 3px;
+    border-style: solid;
+}
+
+.codeEntry{
+    padding: 8px;
+}
+
+.textBox{
+    padding: 2px;
+}
+
+.number{
+    padding: 2px;
+}
+
+.word {
+    border: black;
+    border-width: 3px;
+    border-style: solid;
+    text-align: center;
+    padding: 3px;
+}
+.codemaster > .blueteam {
+    background-color: #00B2FF;
+}
+.revealed.blueteam {
+    background-color: #00B2FF;
+}
+.codemaster > .redteam {
+    background-color: red;
+}
+.revealed.redteam {
+    background-color: red;
+}
+
+.codemaster > .assassin {
+    color: white;
+    background-color: black;
+}
+.revealed.assassin {
+    color: red;
+    background-color: black;
+}
+
+.codemaster > .innocent {
+    background-color: #A9A9A9;
+}
+
+.revealed.innocent {
+    background-color: #A9A9A9;
+}
+
+.hidden {
+    display: none;
+}
+
+.blueBackground {
+    background-color: #00B2FF;
+}
+.redBackground {
+    background-color: red;
+}
+.codemaster > .revealed {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' viewBox='0 0 8 8'><path d='M8 0 L0 8 M4 0 L0 4 M8 4 L4 8' stroke='white' stroke-width='.75'/></svg>");
+}
+
+.endWinner {
+    font-size: x-large;
+}
+.redteamWon {
+    color: darkred;
+}
+.blueteamWon {
+    color: darkblue;
+}
