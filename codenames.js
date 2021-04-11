@@ -275,3 +275,7 @@ startGame(gameState);
 // when restart, make it say reds turn
 //take out words from list so no repeats
 //put on internet so you can play from anywhere :)
+/*messages that will be send:
+-who is which character
+color all words
+pick all words*/
