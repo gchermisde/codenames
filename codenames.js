@@ -1,4 +1,10 @@
+const webSocketEndpoint = "wss://vo41xadzr9.execute-api.us-east-1.amazonaws.com/production";
 
+/* Returns the content of the input element with the given id. */
+function getInput(id) {
+    const elem = document.getElementById(id);
+    return elem.value;
+}
 
 const listOfAllBoxes = function() {
     const boxes = [];
@@ -166,7 +172,7 @@ const startGame = function(gameState){
     const codeEntryNumberElem = document.getElementById("codeEntryNumber");
     const whoseTurnRoleElem = document.getElementById("whoseTurnRole");
     codeEntryElem.classList.remove("hidden");
-    codeDisplayElem.classList.add("hidden");
+    codeDisplayElem.classList.add("hidden");0
     codeEntryWordElem.value = "";
     codeEntryNumberElem.value = "";
     whoseTurnRoleElem.innerHTML = "Codemaster";
@@ -256,21 +262,52 @@ const showGrid = function(){
     bodyElem.classList.remove("blueBackground");
 }
 
-// make whos turn it is, blue of red
-
-//========== do stuff ==========
-const gameState = {
-    showingCodemaster: true,
-    currentTeam: "red",
-    bluesLeft: 8,
-    redsLeft: 9,
-    assassinsLeft: 1,
-    gameOver: false,
-    allowClicks: false,
-    clicksDoneThisTurn: 0,
+const onGetMessage = function(event) {
+    console.log("Got a message");
+    console.log(event.data);
 };
 
-startGame(gameState);
+window.addEventListener("load", function() {
+    function connect() {
+        const joinGameButtonElem = document.getElementById("joinGameButton");
+        joinGameButtonElem.disabled = true;
+
+        //section that creates websocket
+        const webSocket = new WebSocket(webSocketEndpoint);
+        webSocket.onmessage = onGetMessage;
+
+        function onJoinGame() {
+            const gameId = getInput("enterJoinGameCode");
+            const playerId = getInput("enterUsername");
+            const action = "joinGame";
+            const message = {action, gameId, playerId};
+            const messageText = JSON.stringify(message);
+            console.log(`Sending "${messageText}"`);
+            webSocket.send(messageText);
+        }
+        joinGameButtonElem.onclick = onJoinGame;
+        joinGameButtonElem.disabled = false;
+    };
+
+    // make whos turn it is, blue of red
+
+    //========== do stuff ==========
+    const gameState = {
+        showingCodemaster: true,
+        currentTeam: "red",
+        bluesLeft: 8,
+        redsLeft: 9,
+        assassinsLeft: 1,
+        gameOver: false,
+        allowClicks: false,
+        clicksDoneThisTurn: 0,
+    };
+    connect();
+    startGame(gameState);
+
+});
+
+
 //fix when restart, delete value in entry boxes
 // when restart, make it say reds turn
 //take out words from list so no repeats

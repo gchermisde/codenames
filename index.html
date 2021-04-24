@@ -4,80 +4,89 @@
 		<link rel="stylesheet" href="codenames.css">
 	</head>
 	<body id="body">
-		<h1>Codenames</h1>
-		<p>by Genevieve Chermside</p>
-        <div class="endWinner" id="endWinner">
-            <div class="redteamWon hidden" id="redteamWon">Redteam Won!</div>
-            <div class="blueteamWon hidden" id="blueteamWon">Blue Team Won!</div>
-        </div>
-
-		<div class="hidden" id="gameBoard">
-			<div class="grid" id="grid">
-				<div class="word" onclick="clickWord(gameState, 'word1')" id="word1"></div>
-				<div class="word"  onclick="clickWord(gameState, 'word2')" id="word2"></div>
-				<div class="word"  onclick="clickWord(gameState, 'word3')" id="word3"></div>
-				<div class="word"  onclick="clickWord(gameState, 'word4')" id="word4"></div>
-				<div class="word" onclick="clickWord(gameState, 'word5')" id="word5"></div>
-				<div class="word" onclick="clickWord(gameState, 'word6')" id="word6"></div>
-				<div class="word" onclick="clickWord(gameState, 'word7')" id="word7"></div>
-				<div class="word" onclick="clickWord(gameState, 'word8')" id="word8"></div>
-				<div class="word" onclick="clickWord(gameState, 'word9')" id="word9"></div>
-				<div class="word" onclick="clickWord(gameState, 'word10')" id="word10"></div>
-				<div class="word" onclick="clickWord(gameState, 'word11')" id="word11"></div>
-				<div class="word" onclick="clickWord(gameState, 'word12')" id="word12"></div>
-				<div class="word" onclick="clickWord(gameState, 'word13')" id="word13"></div>
-				<div class="word" onclick="clickWord(gameState, 'word14')" id="word14"></div>
-				<div class="word" onclick="clickWord(gameState, 'word15')"  id="word15"></div>
-				<div class="word" onclick="clickWord(gameState, 'word16')" id="word16"></div>
-				<div class="word" onclick="clickWord(gameState, 'word17')" id="word17"></div>
-				<div class="word" onclick="clickWord(gameState, 'word18')" id="word18"></div>
-				<div class="word" onclick="clickWord(gameState, 'word19')" id="word19"></div>
-				<div class="word" onclick="clickWord(gameState, 'word20')" id="word20"></div>
-				<div class="word" onclick="clickWord(gameState, 'word21')" id="word21"></div>
-				<div class="word" onclick="clickWord(gameState, 'word22')" id="word22"></div>
-				<div class="word" onclick="clickWord(gameState, 'word23')" id="word23"></div>
-				<div class="word" onclick="clickWord(gameState, 'word24')" id="word24"></div>
-				<div class="word" onclick="clickWord(gameState, 'word25')" id="word25"></div>
-			</div>
-			
-			<div class="codeEntry" id="codeEntry">
-				<div class="textBox">
-					<label>Enter a Word</label>
-					<input type="text" id="codeEntryWord">
-				</div>
-				<div class="number">
-					<label>Enter a Number</label>
-					<input type="number" id="codeEntryNumber">
-				</div>
-			</div>
-			
-			<div class="codeDisplay" id="codeDisplay">
-				<label>Code Word</label>
-				<div class="codeWN" id="codeDisplayWord"></div>
-				<div class="codeWN" id="codeDisplayNumber"></div>
-			</div>
-            <div class="hidden" id="mustEnterMessage">
-                You must enter a word and number above
-            </div>
-			<button onclick="switchTurn(gameState)" id="doneTurnButton">Done Turn</button>
-		</div> 
-		<!--end of game board-->
-		
-		
-		<div id="whoseTurn">
-			<span id="whoseTurnColor"></span>
-			<span id="whoseTurnRole"></span>
-			Turn
-			<button onclick="showGrid()">Start</button>
+		<div id="login">
+			<h2>Join a Game!</h2>
+			<label>Enter a Game Code</label>
+			<input type="text" id="enterJoinGameCode">
+			<label>Enter Username</label>
+			<input type="text" id="enterUsername">
+			<button id="joinGameButton">Join Game</button>
 		</div>
+		<div id="game" class="hidden">
+			<h1>Codenames</h1>
+			<p>by Genevieve Chermside</p>
+			<div class="endWinner" id="endWinner">
+				<div class="redteamWon hidden" id="redteamWon">Redteam Won!</div>
+				<div class="blueteamWon hidden" id="blueteamWon">Blue Team Won!</div>
+			</div>
 
-		<div>
-			<button onclick="startGame(gameState)">Restart</button>
+			<div class="hidden" id="gameBoard">
+				<div class="grid" id="grid">
+					<div class="word" onclick="clickWord(gameState, 'word1')" id="word1"></div>
+					<div class="word"  onclick="clickWord(gameState, 'word2')" id="word2"></div>
+					<div class="word"  onclick="clickWord(gameState, 'word3')" id="word3"></div>
+					<div class="word"  onclick="clickWord(gameState, 'word4')" id="word4"></div>
+					<div class="word" onclick="clickWord(gameState, 'word5')" id="word5"></div>
+					<div class="word" onclick="clickWord(gameState, 'word6')" id="word6"></div>
+					<div class="word" onclick="clickWord(gameState, 'word7')" id="word7"></div>
+					<div class="word" onclick="clickWord(gameState, 'word8')" id="word8"></div>
+					<div class="word" onclick="clickWord(gameState, 'word9')" id="word9"></div>
+					<div class="word" onclick="clickWord(gameState, 'word10')" id="word10"></div>
+					<div class="word" onclick="clickWord(gameState, 'word11')" id="word11"></div>
+					<div class="word" onclick="clickWord(gameState, 'word12')" id="word12"></div>
+					<div class="word" onclick="clickWord(gameState, 'word13')" id="word13"></div>
+					<div class="word" onclick="clickWord(gameState, 'word14')" id="word14"></div>
+					<div class="word" onclick="clickWord(gameState, 'word15')"  id="word15"></div>
+					<div class="word" onclick="clickWord(gameState, 'word16')" id="word16"></div>
+					<div class="word" onclick="clickWord(gameState, 'word17')" id="word17"></div>
+					<div class="word" onclick="clickWord(gameState, 'word18')" id="word18"></div>
+					<div class="word" onclick="clickWord(gameState, 'word19')" id="word19"></div>
+					<div class="word" onclick="clickWord(gameState, 'word20')" id="word20"></div>
+					<div class="word" onclick="clickWord(gameState, 'word21')" id="word21"></div>
+					<div class="word" onclick="clickWord(gameState, 'word22')" id="word22"></div>
+					<div class="word" onclick="clickWord(gameState, 'word23')" id="word23"></div>
+					<div class="word" onclick="clickWord(gameState, 'word24')" id="word24"></div>
+					<div class="word" onclick="clickWord(gameState, 'word25')" id="word25"></div>
+				</div>
+
+				<div class="codeEntry" id="codeEntry">
+					<div class="textBox">
+						<label>Enter a Word</label>
+						<input type="text" id="codeEntryWord">
+					</div>
+					<div class="number">
+						<label>Enter a Number</label>
+						<input type="number" id="codeEntryNumber">
+					</div>
+				</div>
+
+				<div class="codeDisplay" id="codeDisplay">
+					<label>Code Word</label>
+					<div class="codeWN" id="codeDisplayWord"></div>
+					<div class="codeWN" id="codeDisplayNumber"></div>
+				</div>
+				<div class="hidden" id="mustEnterMessage">
+					You must enter a word and number aboveo
+				</div>
+				<button onclick="switchTurn(gameState)" id="doneTurnButton">Done Turn</button>
+			</div>
+			<!--end of game board-->
+
+
+			<div id="whoseTurn">
+				<span id="whoseTurnColor"></span>
+				<span id="whoseTurnRole"></span>
+				Turn
+				<button onclick="showGrid()">Start</button>
+			</div>
+
+			<div>
+				<button onclick="startGame(gameState)">Restart</button>
+			</div>
+
+			<script src="wordList.js"></script>
+			<script src="codenames.js"></script>
 		</div>
-
-		<script src="wordList.js"></script>
-		<script src="codenames.js"></script>
-		
 	</body>
 
 </html>
