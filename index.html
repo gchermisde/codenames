@@ -4,7 +4,7 @@
 		<link rel="stylesheet" href="codenames.css">
 	</head>
 	<body id="body">
-		<div id="login">
+		<div class="room" id="joiningRoom">
 			<h2>Join a Game!</h2>
 			<label>Enter a Game Code</label>
 			<input type="text" id="enterJoinGameCode">
@@ -12,7 +12,30 @@
 			<input type="text" id="enterUsername">
 			<button id="joinGameButton">Join Game</button>
 		</div>
-		<div id="game" class="hidden">
+
+		<div class="hidden room" id="waitingRoom">
+			<h1>Waiting Room</h1>
+			<div class="playerList" id="playerList">
+				<div>#</div>
+				<div>name</div>
+				<div>role</div>
+				<div>1.</div>
+				<div id="player1"><i>waiting...</i></div>
+				<div>Red Codemaster </div>
+				<div>2.</div>
+				<div id="player2"><i>waiting...</i></div>
+				<div>Blue Codemaster</div>
+				<div>3.</div>
+				<div id="player3"><i>waiting...</i></div>
+				<div>Red Guesser</div>
+				<div>4.</div>
+				<div id="player4"><i>waiting...</i></div>
+				<div>Blue Guesser</div>
+			</div>
+			<button onclick="clickedReadyToPlay()" class="hidden clicked" id="readyToPlayButton">Ready to Play</button>
+		</div>
+
+		<div id="gameRoom" class="hidden room">
 			<h1>Codenames</h1>
 			<p>by Genevieve Chermside</p>
 			<div class="endWinner" id="endWinner">

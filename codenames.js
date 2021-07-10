@@ -263,12 +263,35 @@ const showGrid = function(){
 }
 
 const onGetMessage = function(event) {
-    console.log("Got a message");
-    console.log(event.data);
+    const message = JSON.parse(event.data);
+    console.log(message);
+    if (message.trigger === "playerAdded") {
+        onPlayerAdded(message);
+    };
 };
 
+const onPlayerAdded = function(message) {
+    //add new line in player list here
+    let playerCounter = 0;
+    for (const player of message.players) {
+        const elem = document.getElementById(`player${playerCounter + 1}`);
+        elem.innerText = player;
+        playerCounter = playerCounter + 1;
+        if (playerCounter === 4) {
+            const readyToPlayButtonElem = document.getElementById("readyToPlayButton");
+            readyToPlayButtonElem.classList.remove("hidden");
+        }
+    }
+}
+
+const clickedReadyToPlay = function() {
+    const readyToPlayButtonElem = document.getElementById("readyToPlayButton");
+    readyToPlayButtonElem.disabled = true;
+    readyToPlayButtonElem.innerText = 'Waiting...';
+}
+
 window.addEventListener("load", function() {
-    function connect() {
+    function connect(setupState) {
         const joinGameButtonElem = document.getElementById("joinGameButton");
         joinGameButtonElem.disabled = true;
 
@@ -277,13 +300,20 @@ window.addEventListener("load", function() {
         webSocket.onmessage = onGetMessage;
 
         function onJoinGame() {
-            const gameId = getInput("enterJoinGameCode");
+            const gameId = "codenames-"+getInput("enterJoinGameCode");
             const playerId = getInput("enterUsername");
             const action = "joinGame";
             const message = {action, gameId, playerId};
             const messageText = JSON.stringify(message);
             console.log(`Sending "${messageText}"`);
             webSocket.send(messageText);
+            setupState.currentRoom = "waitingRoom";
+            console.log("you are in the waiting room");
+            const joiningRoomElem = document.getElementById("joiningRoom");
+            joiningRoomElem.classList.add("hidden");
+            const waitingRoomElem = document.getElementById("waitingRoom");
+            waitingRoomElem.classList.remove("hidden");
+
         }
         joinGameButtonElem.onclick = onJoinGame;
         joinGameButtonElem.disabled = false;
@@ -302,7 +332,12 @@ window.addEventListener("load", function() {
         allowClicks: false,
         clicksDoneThisTurn: 0,
     };
-    connect();
+
+    const setupState = {
+      currentRoom: "joiningRoom", // the allowed values are "joiningRoom", "waitingRoom", "gameRoom".
+    };
+
+    connect(setupState);
     startGame(gameState);
 
 });
@@ -316,3 +351,4 @@ window.addEventListener("load", function() {
 -who is which character
 color all words
 pick all words*/
+// BUG Uncaught DOMException: An attempt was made to use an object that is not, or is no longer, usable, line 299
