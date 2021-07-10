@@ -262,13 +262,6 @@ const showGrid = function(){
     bodyElem.classList.remove("blueBackground");
 }
 
-const onGetMessage = function(event) {
-    const message = JSON.parse(event.data);
-    console.log(message);
-    if (message.trigger === "playerAdded") {
-        onPlayerAdded(message);
-    };
-};
 
 const onPlayerAdded = function(message) {
     //add new line in player list here
@@ -284,13 +277,30 @@ const onPlayerAdded = function(message) {
     }
 }
 
-const clickedReadyToPlay = function() {
-    const readyToPlayButtonElem = document.getElementById("readyToPlayButton");
-    readyToPlayButtonElem.disabled = true;
-    readyToPlayButtonElem.innerText = 'Waiting...';
+const onReadyToPlay = function(message) {
+    console.log("We made it!");
 }
 
 window.addEventListener("load", function() {
+    const onGetMessage = function(event) {
+        const message = JSON.parse(event.data);
+        console.log(message);
+        if (setupState.currentRoom === "joiningRoom") {
+
+        } else if (setupState.currentRoom === "waitingRoom") {
+            if (message.trigger === "playerAdded") {
+                onPlayerAdded(message);
+            } else if (message.trigger === "messageSent") {
+                if (message.data.messageType === "readyToPlay") {
+                    onReadyToPlay(message);
+                }
+            }
+        } else if (setupState.currentRoom === "gameRoom") {
+
+        }
+    };
+
+
     function connect(setupState) {
         const joinGameButtonElem = document.getElementById("joinGameButton");
         joinGameButtonElem.disabled = true;
@@ -298,6 +308,20 @@ window.addEventListener("load", function() {
         //section that creates websocket
         const webSocket = new WebSocket(webSocketEndpoint);
         webSocket.onmessage = onGetMessage;
+
+        const readyToPlayButtonElem = document.getElementById("readyToPlayButton");
+        const clickedReadyToPlay = function() {
+            readyToPlayButtonElem.disabled = true;
+            readyToPlayButtonElem.innerText = 'Waiting...';
+            //sending the message
+            const jsonMessage = {messageType: "readyToPlay"};
+            const fullMessage = {action: "sendMessage", "data": jsonMessage};
+            const messageText = JSON.stringify(fullMessage);
+            console.log(`Sending "${messageText}"`);
+            webSocket.send(messageText);
+        }
+        readyToPlayButtonElem.onclick = clickedReadyToPlay;
+
 
         function onJoinGame() {
             const gameId = "codenames-"+getInput("enterJoinGameCode");
@@ -313,7 +337,6 @@ window.addEventListener("load", function() {
             joiningRoomElem.classList.add("hidden");
             const waitingRoomElem = document.getElementById("waitingRoom");
             waitingRoomElem.classList.remove("hidden");
-
         }
         joinGameButtonElem.onclick = onJoinGame;
         joinGameButtonElem.disabled = false;
