@@ -275,10 +275,33 @@ const onPlayerAdded = function(message) {
             readyToPlayButtonElem.classList.remove("hidden");
         }
     }
+    playerList = message.players;
 }
 
+let playerList;
+
+const playerId = function(playerName) {
+    const result = playerList.indexOf(playerName);
+    if (result === -1) {
+        throw Error(`Invalid player name "${playerName}"`);
+    }
+    return result;
+}
+
+
+const whoIsReadyToPlay = [false, false, false, false];
 const onReadyToPlay = function(message) {
-    console.log("We made it!");
+    areWeReadyToPlay(message.sender);
+}
+
+const areWeReadyToPlay = function(playerName) {
+    whoIsReadyToPlay[playerId(playerName)] = true;
+    if ( whoIsReadyToPlay.every(x => x) ) {
+        console.log("Every one is true");
+        //setupState.currentRoom = gameRoom;
+        //startGame();
+    }
+
 }
 
 window.addEventListener("load", function() {
@@ -319,6 +342,8 @@ window.addEventListener("load", function() {
             const messageText = JSON.stringify(fullMessage);
             console.log(`Sending "${messageText}"`);
             webSocket.send(messageText);
+
+            areWeReadyToPlay(gameState.myPlayerName);
         }
         readyToPlayButtonElem.onclick = clickedReadyToPlay;
 
@@ -337,6 +362,7 @@ window.addEventListener("load", function() {
             joiningRoomElem.classList.add("hidden");
             const waitingRoomElem = document.getElementById("waitingRoom");
             waitingRoomElem.classList.remove("hidden");
+            gameState.myPlayerName = playerId;
         }
         joinGameButtonElem.onclick = onJoinGame;
         joinGameButtonElem.disabled = false;
@@ -354,6 +380,7 @@ window.addEventListener("load", function() {
         gameOver: false,
         allowClicks: false,
         clicksDoneThisTurn: 0,
+        myPlayerName: null,
     };
 
     const setupState = {
