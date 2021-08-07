@@ -1,5 +1,22 @@
 const webSocketEndpoint = "wss://vo41xadzr9.execute-api.us-east-1.amazonaws.com/production";
 
+const g_gameState = {
+    showingCodemaster: true,
+    currentTeam: "red",
+    bluesLeft: 8,
+    redsLeft: 9,
+    assassinsLeft: 1,
+    gameOver: false,
+    allowClicks: false,
+    clicksDoneThisTurn: 0,
+    myPlayerName: null,
+};
+
+const g_setupState = {
+    currentRoom: "joiningRoom", // the allowed values are "joiningRoom", "waitingRoom", "gameRoom".
+};
+
+
 /* Returns the content of the input element with the given id. */
 function getInput(id) {
     const elem = document.getElementById(id);
@@ -65,37 +82,37 @@ const colorAllWords = function(){
     }
 }
 
-const clickWord = function(gameState, cellId){
-    if (gameState.allowClicks === true) {
+const clickWord = function(cellId){
+    if (g_gameState.allowClicks === true) {
         const classList = document.getElementById(cellId).classList;
         if (!classList.contains('revealed')){
-            gameState.clicksDoneThisTurn = gameState.clicksDoneThisTurn + 1;
+            g_gameState.clicksDoneThisTurn = g_gameState.clicksDoneThisTurn + 1;
             if (classList.contains('blueteam')) {
-                gameState.bluesLeft = gameState.bluesLeft - 1;
-                if (gameState.currentTeam === "red") {
-                    gameState.allowClicks = false;
+                g_gameState.bluesLeft = g_gameState.bluesLeft - 1;
+                if (g_gameState.currentTeam === "red") {
+                    g_gameState.allowClicks = false;
                 }
             }
             if (classList.contains('redteam')) {
-                gameState.redsLeft = gameState.redsLeft - 1;
-                if (gameState.currentTeam === "blue") {
-                    gameState.allowClicks = false;
+                g_gameState.redsLeft = g_gameState.redsLeft - 1;
+                if (g_gameState.currentTeam === "blue") {
+                    g_gameState.allowClicks = false;
                 }
             }
             if (classList.contains('innocent')) {
-                gameState.allowClicks = false;
+                g_gameState.allowClicks = false;
             }
             if (classList.contains('assassin')) {
-                gameState.assassinsLeft = gameState.assassinsLeft - 1;
-                gameState.allowClicks = false;
+                g_gameState.assassinsLeft = g_gameState.assassinsLeft - 1;
+                g_gameState.allowClicks = false;
             }
             classList.add("revealed");
             //decide if we've clicked enough times//
             const numberElem = document.getElementById("codeEntryNumber");
             const numberString = numberElem.value;
             const number = parseInt(numberString);
-            if (number + 1 <= gameState.clicksDoneThisTurn) {
-                gameState.allowClicks = false;
+            if (number + 1 <= g_gameState.clicksDoneThisTurn) {
+                g_gameState.allowClicks = false;
             }
             //is game over check//
             const gridElem = document.getElementById("grid");
@@ -103,7 +120,7 @@ const clickWord = function(gameState, cellId){
             const doneTurnButtonElem = document.getElementById("doneTurnButton");
             const redteamWonElem = document.getElementById("redteamWon");
             const blueteamWonElem = document.getElementById("blueteamWon");
-            if (gameState.bluesLeft === 0){
+            if (g_gameState.bluesLeft === 0){
                 doneTurnButtonElem.classList.add("hidden");
                 codeDisplayElem.classList.add("hidden");
                 blueteamWonElem.classList.remove("hidden");
@@ -111,7 +128,7 @@ const clickWord = function(gameState, cellId){
                 const bodyElem = document.getElementById("body");
                 bodyElem.classList.add("blueBackground");
             }
-            if (gameState.redsLeft === 0){
+            if (g_gameState.redsLeft === 0){
                 doneTurnButtonElem.classList.add("hidden");
                 codeDisplayElem.classList.add("hidden");
                 const redteamWonElem = document.getElementById("redteamWon");
@@ -120,11 +137,11 @@ const clickWord = function(gameState, cellId){
                 const bodyElem = document.getElementById("body");
                 bodyElem.classList.add("redBackground");
             }
-            if (gameState.assassinsLeft === 0){
+            if (g_gameState.assassinsLeft === 0){
                 gridElem.classList.add("codemaster");
                 codeDisplayElem.classList.add("hidden");
                 doneTurnButtonElem.classList.add("hidden");
-                if (gameState.currentTeam === "red") {
+                if (g_gameState.currentTeam === "red") {
                     blueteamWonElem.classList.remove("hidden");
                     const bodyElem = document.getElementById("body");
                     bodyElem.classList.add("blueBackground");
@@ -138,7 +155,12 @@ const clickWord = function(gameState, cellId){
     }
 };
 
-const startGame = function(gameState){
+const startGame = function(){
+    console.log("starting new game");
+    const waitingRoomElem = document.getElementById("waitingRoom");
+    waitingRoomElem.classList.add("hidden");
+    const gameRoomElem = document.getElementById("gameRoom");
+    gameRoomElem.classList.remove("hidden");
     resetAllWords();
     colorAllWords();
     for (const box of listOfAllBoxes()) {
@@ -146,11 +168,11 @@ const startGame = function(gameState){
             document.getElementById(box).classList.remove('revealed');
         }
     }
-    gameState.bluesLeft = 8;
-    gameState.redsLeft = 9;
-    gameState.assassinsLeft = 1;
-    gameState.showingCodemaster = true;
-    gameState.currentTeam = "red";
+    g_gameState.bluesLeft = 8;
+    g_gameState.redsLeft = 9;
+    g_gameState.assassinsLeft = 1;
+    g_gameState.showingCodemaster = true;
+    g_gameState.currentTeam = "red";
     const gameBoardElem = document.getElementById("gameBoard");
     gameBoardElem.classList.add("hidden");
     const whoseTurnElem = document.getElementById("whoseTurn");
@@ -178,12 +200,12 @@ const startGame = function(gameState){
     whoseTurnRoleElem.innerHTML = "Codemaster";
     const whoseTurnColorElem = document.getElementById("whoseTurnColor");
     whoseTurnColorElem.innerHTML = "Red";
-    gameState.currentTeam = "red";
+    g_gameState.currentTeam = "red";
 
 }
 
 
-function switchTurn(gameState) {
+function switchTurn() {
     const gridElem = document.getElementById("grid");
     const codeEntryElem = document.getElementById("codeEntry");
     const codeDisplayElem = document.getElementById("codeDisplay");
@@ -197,9 +219,9 @@ function switchTurn(gameState) {
     const whoseTurnColorElem = document.getElementById("whoseTurnColor");
     const mustEnterMessageElem = document.getElementById("mustEnterMessage");
     const bodyElem = document.getElementById("body");
-    if (gameState.showingCodemaster) {
+    if (g_gameState.showingCodemaster) {
         // from codemaster to guesser
-        gameState.clicksDoneThisTurn = 0;
+        g_gameState.clicksDoneThisTurn = 0;
         if (
             (codeEntryWordElem !== null && codeEntryWordElem.value === "")||
             (codeEntryNumberElem !== null && codeEntryNumberElem.value === "")
@@ -213,12 +235,12 @@ function switchTurn(gameState) {
             codeDisplayWordElem.innerHTML = codeEntryWordElem.value;
             codeDisplayNumberElem.innerHTML = codeEntryNumberElem.value;
             whoseTurnRoleElem.innerHTML = "Guesser";
-            gameState.showingCodemaster = false;
-            gameState.allowClicks = true;
+            g_gameState.showingCodemaster = false;
+            g_gameState.allowClicks = true;
             //does the actual stuf of switching
             gameBoardElem.classList.add("hidden");
             whoseTurnElem.classList.remove("hidden");
-            if (gameState.currentTeam === "red") {
+            if (g_gameState.currentTeam === "red") {
                 bodyElem.classList.add("redBackground");
             } else {
                 bodyElem.classList.add("blueBackground");
@@ -232,19 +254,19 @@ function switchTurn(gameState) {
         codeEntryWordElem.value = "";
         codeEntryNumberElem.value = "";
         whoseTurnRoleElem.innerHTML = "Codemaster";
-        if (gameState.currentTeam === "red") {
+        if (g_gameState.currentTeam === "red") {
             whoseTurnColorElem.innerHTML = "Blue";
-            gameState.currentTeam = "blue";
+            g_gameState.currentTeam = "blue";
         } else {
             whoseTurnColorElem.innerHTML = "Red";
-            gameState.currentTeam = "red";
+            g_gameState.currentTeam = "red";
         }
-        gameState.showingCodemaster = true;
-        gameState.allowClicks = false;
+        g_gameState.showingCodemaster = true;
+        g_gameState.allowClicks = false;
         //does the stuff of swiching
         gameBoardElem.classList.add("hidden");
         whoseTurnElem.classList.remove("hidden");
-        if (gameState.currentTeam === "red") {
+        if (g_gameState.currentTeam === "red") {
             bodyElem.classList.add("redBackground");
         } else {
             bodyElem.classList.add("blueBackground");
@@ -298,8 +320,8 @@ const areWeReadyToPlay = function(playerName) {
     whoIsReadyToPlay[playerId(playerName)] = true;
     if ( whoIsReadyToPlay.every(x => x) ) {
         console.log("Every one is true");
-        //setupState.currentRoom = gameRoom;
-        //startGame();
+        g_setupState.currentRoom = "gameRoom";
+        startGame();
     }
 
 }
@@ -308,9 +330,9 @@ window.addEventListener("load", function() {
     const onGetMessage = function(event) {
         const message = JSON.parse(event.data);
         console.log(message);
-        if (setupState.currentRoom === "joiningRoom") {
+        if (g_setupState.currentRoom === "joiningRoom") {
 
-        } else if (setupState.currentRoom === "waitingRoom") {
+        } else if (g_setupState.currentRoom === "waitingRoom") {
             if (message.trigger === "playerAdded") {
                 onPlayerAdded(message);
             } else if (message.trigger === "messageSent") {
@@ -318,13 +340,13 @@ window.addEventListener("load", function() {
                     onReadyToPlay(message);
                 }
             }
-        } else if (setupState.currentRoom === "gameRoom") {
+        } else if (g_setupState.currentRoom === "gameRoom") {
 
         }
     };
 
 
-    function connect(setupState) {
+    function connect() {
         const joinGameButtonElem = document.getElementById("joinGameButton");
         joinGameButtonElem.disabled = true;
 
@@ -343,7 +365,7 @@ window.addEventListener("load", function() {
             console.log(`Sending "${messageText}"`);
             webSocket.send(messageText);
 
-            areWeReadyToPlay(gameState.myPlayerName);
+            areWeReadyToPlay(g_gameState.myPlayerName);
         }
         readyToPlayButtonElem.onclick = clickedReadyToPlay;
 
@@ -356,13 +378,13 @@ window.addEventListener("load", function() {
             const messageText = JSON.stringify(message);
             console.log(`Sending "${messageText}"`);
             webSocket.send(messageText);
-            setupState.currentRoom = "waitingRoom";
+            g_setupState.currentRoom = "waitingRoom";
             console.log("you are in the waiting room");
             const joiningRoomElem = document.getElementById("joiningRoom");
             joiningRoomElem.classList.add("hidden");
             const waitingRoomElem = document.getElementById("waitingRoom");
             waitingRoomElem.classList.remove("hidden");
-            gameState.myPlayerName = playerId;
+            g_gameState.myPlayerName = playerId;
         }
         joinGameButtonElem.onclick = onJoinGame;
         joinGameButtonElem.disabled = false;
@@ -371,24 +393,8 @@ window.addEventListener("load", function() {
     // make whos turn it is, blue of red
 
     //========== do stuff ==========
-    const gameState = {
-        showingCodemaster: true,
-        currentTeam: "red",
-        bluesLeft: 8,
-        redsLeft: 9,
-        assassinsLeft: 1,
-        gameOver: false,
-        allowClicks: false,
-        clicksDoneThisTurn: 0,
-        myPlayerName: null,
-    };
 
-    const setupState = {
-      currentRoom: "joiningRoom", // the allowed values are "joiningRoom", "waitingRoom", "gameRoom".
-    };
-
-    connect(setupState);
-    startGame(gameState);
+    connect();
 
 });
 
