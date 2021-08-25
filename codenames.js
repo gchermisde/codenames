@@ -31,17 +31,25 @@ const listOfAllBoxes = function() {
     return boxes;
 };
 
+const chooseRandomWords = function() {
+    const words = [];
+    for (const box of listOfAllBoxes()) {
+        const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
+        words.push(randomWord);
+    }
+    return words;
+}
 
-const setWord = function(wordId) {
-    const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
+const setWord = function(wordId, word) {
     const elem = document.getElementById(wordId);
-    elem.innerHTML = randomWord;
+    elem.innerHTML = word;
 };
 
-const resetAllWords = function() {
-    for (const box of listOfAllBoxes()) {
-        setWord(box);
-    }
+const resetAllWords = function(words) {
+    const boxes = listOfAllBoxes();
+    words.forEach(function(word, i) {
+        setWord(boxes[i], word);
+    });
 };
 
 const pickBox = function(boxes){
