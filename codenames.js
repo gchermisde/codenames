@@ -16,6 +16,7 @@ const g_setupState = {
     currentRoom: "joiningRoom", // the allowed values are "joiningRoom", "waitingRoom", "gameRoom".
 };
 
+let g_webSocket = null;
 
 /* Returns the content of the input element with the given id. */
 function getInput(id) {
@@ -163,19 +164,35 @@ const clickWord = function(cellId){
     }
 };
 
-const startGame = function(){
+const startGame = function() {
     console.log("starting new game");
     const waitingRoomElem = document.getElementById("waitingRoom");
     waitingRoomElem.classList.add("hidden");
-    const gameRoomElem = document.getElementById("gameRoom");
-    gameRoomElem.classList.remove("hidden");
-    resetAllWords();
+    if (g_gameState.myPlayerName === playerList[0]) {
+        console.log("I'm the red codemaster");
+        const words = chooseRandomWords();
+        //sending the message
+        const jsonMessage = {messageType: "choseWords", words: words};
+        const fullMessage = {action: "sendMessage", data: jsonMessage};
+        const messageText = JSON.stringify(fullMessage);
+        console.log(`Sending "${messageText}"`);
+        g_webSocket.send(messageText);
+
+        startPlay(words);
+    }
+}
+
+
+const startPlay = function(words) {
+    resetAllWords(words);
     colorAllWords();
     for (const box of listOfAllBoxes()) {
         if ( document.getElementById(box).classList.contains('revealed')){
             document.getElementById(box).classList.remove('revealed');
         }
     }
+    const gameRoomElem = document.getElementById("gameRoom");
+    gameRoomElem.classList.remove("hidden");
     g_gameState.bluesLeft = 8;
     g_gameState.redsLeft = 9;
     g_gameState.assassinsLeft = 1;
@@ -331,13 +348,19 @@ const areWeReadyToPlay = function(playerName) {
         g_setupState.currentRoom = "gameRoom";
         startGame();
     }
-
 }
+
+
+const onChoseWords = function(message) {
+    const words = message.data.words;
+    startPlay(words);
+}
+
 
 window.addEventListener("load", function() {
     const onGetMessage = function(event) {
         const message = JSON.parse(event.data);
-        console.log(message);
+        console.log("received", message);
         if (g_setupState.currentRoom === "joiningRoom") {
 
         } else if (g_setupState.currentRoom === "waitingRoom") {
@@ -349,7 +372,11 @@ window.addEventListener("load", function() {
                 }
             }
         } else if (g_setupState.currentRoom === "gameRoom") {
-
+            if (message.trigger === "messageSent") {
+                if (message.data.messageType === "choseWords") {
+                    onChoseWords(message);
+                }
+            }
         }
     };
 
@@ -359,8 +386,8 @@ window.addEventListener("load", function() {
         joinGameButtonElem.disabled = true;
 
         //section that creates websocket
-        const webSocket = new WebSocket(webSocketEndpoint);
-        webSocket.onmessage = onGetMessage;
+        g_webSocket = new WebSocket(webSocketEndpoint);
+        g_webSocket.onmessage = onGetMessage;
 
         const readyToPlayButtonElem = document.getElementById("readyToPlayButton");
         const clickedReadyToPlay = function() {
@@ -371,7 +398,7 @@ window.addEventListener("load", function() {
             const fullMessage = {action: "sendMessage", "data": jsonMessage};
             const messageText = JSON.stringify(fullMessage);
             console.log(`Sending "${messageText}"`);
-            webSocket.send(messageText);
+            g_webSocket.send(messageText);
 
             areWeReadyToPlay(g_gameState.myPlayerName);
         }
@@ -385,7 +412,7 @@ window.addEventListener("load", function() {
             const message = {action, gameId, playerId};
             const messageText = JSON.stringify(message);
             console.log(`Sending "${messageText}"`);
-            webSocket.send(messageText);
+            g_webSocket.send(messageText);
             g_setupState.currentRoom = "waitingRoom";
             console.log("you are in the waiting room");
             const joiningRoomElem = document.getElementById("joiningRoom");
