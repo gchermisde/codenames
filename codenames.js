@@ -53,43 +53,65 @@ const resetAllWords = function(words) {
     });
 };
 
-const pickBox = function(boxes){
-    const position = Math.floor(Math.random() * boxes.length);
-    const box = boxes[position];
-    boxes.splice(position, 1);
-    return box;
+
+const removeColor = function(box) {
+    if (document.getElementById(box).classList.contains('innocent'))
+        document.getElementById(box).classList.remove('innocent');
+    if (document.getElementById(box).classList.contains('redteam'))
+        document.getElementById(box).classList.remove('redteam');
+    if (document.getElementById(box).classList.contains('blueteam'))
+        document.getElementById(box).classList.remove('blueteam');
+    if (document.getElementById(box).classList.contains('assassin'))
+        document.getElementById(box).classList.remove('assassin');
 };
 
-
-
-const placeColor = function(neededBoxes,color){
-    const box = pickBox(neededBoxes);
-    if ( document.getElementById(box).classList.contains('innocent'))
-        document.getElementById(box).classList.remove('innocent');
-    if ( document.getElementById(box).classList.contains('redteam'))
-        document.getElementById(box).classList.remove('redteam');
-    if ( document.getElementById(box).classList.contains('blueteam'))
-        document.getElementById(box).classList.remove('blueteam');
-    if ( document.getElementById(box).classList.contains('assassin'))
-        document.getElementById(box).classList.remove('assassin');
+const placeColor = function(box, color) {
+    removeColor(box);
     document.getElementById(box).classList.add(color);
 };
 
-const colorAllWords = function(){
-    const boxes = listOfAllBoxes();
-    for (let i=0; i<8; i++) {
-        placeColor(boxes, "blueteam");
+
+const shuffle = function(array) {
+    let currentIndex = array.length;
+    let randomIndex;
+
+    // While there remain elements to shuffle...
+    while (currentIndex !== 0) {
+
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        const x = array[currentIndex];
+        const y = array[randomIndex];
+        array[randomIndex] = x;
+        array[currentIndex] = y;
     }
-    for (let i=0; i<9; i++) {
-        placeColor(boxes, "redteam");
-    }
-    for (let i=0; i<1; i++) {
-        placeColor(boxes, "assassin");
-    }
-    for (let i=0; i<7; i++) {
-        placeColor(boxes, "innocent");
-    }
+
+    return array;
 }
+
+/*
+ * This takes in a list of colors (from chooseColors()) and it fills those
+ * colors into the grid. It doesn't return anything.
+ */
+const placeColors = function(colorList) {
+    const boxes = listOfAllBoxes();
+    colorList.forEach(function(color, i) {
+        placeColor(boxes[i], color);
+    });
+};
+
+/*
+ * This returns a list of 25 color classes (in order) like ["blueteam", "innocent", "blueteam"...].
+ */
+const chooseColors = function() {
+    const colorList = ["blueteam", "blueteam", "blueteam", "blueteam", "blueteam", "blueteam", "blueteam", "blueteam", "redteam", "redteam", "redteam", "redteam", "redteam", "redteam", "redteam", "redteam", "redteam", "assassin", "innocent", "innocent", "innocent", "innocent", "innocent", "innocent", "innocent"];
+    shuffle(colorList);
+    return colorList;
+};
+
 
 const clickWord = function(cellId){
     if (g_gameState.allowClicks === true) {
@@ -171,21 +193,22 @@ const startGame = function() {
     if (g_gameState.myPlayerName === playerList[0]) {
         console.log("I'm the red codemaster");
         const words = chooseRandomWords();
+        const colorList = chooseColors();
         //sending the message
-        const jsonMessage = {messageType: "choseWords", words: words};
+        const jsonMessage = {messageType: "chooseWordsAndColors", words: words, colorList: colorList};
         const fullMessage = {action: "sendMessage", data: jsonMessage};
         const messageText = JSON.stringify(fullMessage);
         console.log(`Sending "${messageText}"`);
         g_webSocket.send(messageText);
 
-        startPlay(words);
+        startPlay(words, colorList);
     }
 }
 
 
-const startPlay = function(words) {
+const startPlay = function(words, colorList) {
     resetAllWords(words);
-    colorAllWords();
+    placeColors(colorList);
     for (const box of listOfAllBoxes()) {
         if ( document.getElementById(box).classList.contains('revealed')){
             document.getElementById(box).classList.remove('revealed');
@@ -351,9 +374,10 @@ const areWeReadyToPlay = function(playerName) {
 }
 
 
-const onChoseWords = function(message) {
+const onChooseWordsAndColors = function(message) {
     const words = message.data.words;
-    startPlay(words);
+    const colorList = message.data.colorList;
+    startPlay(words, colorList);
 }
 
 
@@ -373,8 +397,8 @@ window.addEventListener("load", function() {
             }
         } else if (g_setupState.currentRoom === "gameRoom") {
             if (message.trigger === "messageSent") {
-                if (message.data.messageType === "choseWords") {
-                    onChoseWords(message);
+                if (message.data.messageType === "chooseWordsAndColors") {
+                    onChooseWordsAndColors(message);
                 }
             }
         }
