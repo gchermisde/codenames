@@ -38,6 +38,11 @@
 		<div id="gameRoom" class="hidden room">
 			<h1>Codenames</h1>
 			<p>by Genevieve Chermside</p>
+			<div id="whoseTurn">
+				<span id="whoseTurnColor"></span>
+				<span id="whoseTurnRole"></span>
+				Turn
+			</div>
 			<div class="endWinner" id="endWinner">
 				<div class="redteamWon hidden" id="redteamWon">Redteam Won!</div>
 				<div class="blueteamWon hidden" id="blueteamWon">Blue Team Won!</div>
@@ -96,12 +101,6 @@
 			<!--end of game board-->
 
 
-			<div id="whoseTurn">
-				<span id="whoseTurnColor"></span>
-				<span id="whoseTurnRole"></span>
-				Turn
-				<button onclick="showGrid()">Start</button>
-			</div>
 
 			<div>
 				<button onclick="startGame()">Restart</button>

@@ -10,6 +10,8 @@ const g_gameState = {
     allowClicks: false,
     clicksDoneThisTurn: 0,
     myPlayerName: null,
+    myPlayerColor: null, // values: "red", "blue"
+    myPlayerRole: null, // values: "codemaster", "guesser"
 };
 
 const g_setupState = {
@@ -190,7 +192,12 @@ const startGame = function() {
     console.log("starting new game");
     const waitingRoomElem = document.getElementById("waitingRoom");
     waitingRoomElem.classList.add("hidden");
-    if (g_gameState.myPlayerName === playerList[0]) {
+    const iAmPlayer = function(x) {
+        return g_gameState.myPlayerName === playerList[x];
+    };
+    g_gameState.myPlayerColor = iAmPlayer(0) || iAmPlayer(2) ? "red" : "blue";
+    g_gameState.myPlayerRole = iAmPlayer(0) || iAmPlayer(1) ? "codemaster" : "guesser";
+    if (g_gameState.myPlayerColor === "red" && g_gameState.myPlayerRole === "codemaster") {
         console.log("I'm the red codemaster");
         const words = chooseRandomWords();
         const colorList = chooseColors();
@@ -207,6 +214,7 @@ const startGame = function() {
 
 
 const startPlay = function(words, colorList) {
+    // --- Set things for ALL players ---
     resetAllWords(words);
     placeColors(colorList);
     for (const box of listOfAllBoxes()) {
@@ -221,35 +229,39 @@ const startPlay = function(words, colorList) {
     g_gameState.assassinsLeft = 1;
     g_gameState.showingCodemaster = true;
     g_gameState.currentTeam = "red";
-    const gameBoardElem = document.getElementById("gameBoard");
-    gameBoardElem.classList.add("hidden");
-    const whoseTurnElem = document.getElementById("whoseTurn");
-    whoseTurnElem.classList.remove("hidden");
     const bodyElem = document.getElementById("body");
-    bodyElem.classList.add("redBackground");
+    bodyElem.classList.remove("redBackground");
     bodyElem.classList.remove("blueBackground");
-    const gridElem = document.getElementById("grid");
-    gridElem.classList.add("codemaster");
     const blueteamWonElem = document.getElementById("blueteamWon");
     blueteamWonElem.classList.add("hidden");
     const redteamWonElem = document.getElementById("redteamWon");
     redteamWonElem.classList.add("hidden");
-    const doneTurnButtonElem = document.getElementById("doneTurnButton");
-    doneTurnButtonElem.classList.remove("hidden");
-    const codeEntryElem = document.getElementById("codeEntry");
-    const codeDisplayElem = document.getElementById("codeDisplay");
     const codeEntryWordElem = document.getElementById("codeEntryWord");
     const codeEntryNumberElem = document.getElementById("codeEntryNumber");
     const whoseTurnRoleElem = document.getElementById("whoseTurnRole");
-    codeEntryElem.classList.remove("hidden");
-    codeDisplayElem.classList.add("hidden");0
     codeEntryWordElem.value = "";
     codeEntryNumberElem.value = "";
     whoseTurnRoleElem.innerHTML = "Codemaster";
     const whoseTurnColorElem = document.getElementById("whoseTurnColor");
     whoseTurnColorElem.innerHTML = "Red";
     g_gameState.currentTeam = "red";
+    const codeDisplayElem = document.getElementById("codeDisplay");
+    codeDisplayElem.classList.add("hidden");
+    const gameBoardElem = document.getElementById("gameBoard");
+    gameBoardElem.classList.remove("hidden");
 
+    // --- Set things for THIS player ---
+    if (g_gameState.myPlayerRole === "codemaster") {
+        const gridElem = document.getElementById("grid");
+        gridElem.classList.add("codemaster");
+    } else {
+        const codeEntryElem = document.getElementById("codeEntry");
+        codeEntryElem.classList.add("hidden");
+    }
+    if (g_gameState.myPlayerColor === "red" && g_gameState.myPlayerRole === "codemaster") {
+        const doneTurnButtonElem = document.getElementById("doneTurnButton");
+        doneTurnButtonElem.classList.remove("hidden");
+    }
 }
 
 
@@ -262,7 +274,6 @@ function switchTurn() {
     const codeDisplayWordElem = document.getElementById("codeDisplayWord");
     const codeDisplayNumberElem = document.getElementById("codeDisplayNumber");
     const gameBoardElem = document.getElementById("gameBoard");
-    const whoseTurnElem = document.getElementById("whoseTurn");
     const whoseTurnRoleElem = document.getElementById("whoseTurnRole");
     const whoseTurnColorElem = document.getElementById("whoseTurnColor");
     const mustEnterMessageElem = document.getElementById("mustEnterMessage");
@@ -285,14 +296,8 @@ function switchTurn() {
             whoseTurnRoleElem.innerHTML = "Guesser";
             g_gameState.showingCodemaster = false;
             g_gameState.allowClicks = true;
-            //does the actual stuf of switching
+            //does the actual stuff of switching
             gameBoardElem.classList.add("hidden");
-            whoseTurnElem.classList.remove("hidden");
-            if (g_gameState.currentTeam === "red") {
-                bodyElem.classList.add("redBackground");
-            } else {
-                bodyElem.classList.add("blueBackground");
-            }
         }
     } else {
         // from guesser to codemaster
@@ -311,25 +316,7 @@ function switchTurn() {
         }
         g_gameState.showingCodemaster = true;
         g_gameState.allowClicks = false;
-        //does the stuff of swiching
-        gameBoardElem.classList.add("hidden");
-        whoseTurnElem.classList.remove("hidden");
-        if (g_gameState.currentTeam === "red") {
-            bodyElem.classList.add("redBackground");
-        } else {
-            bodyElem.classList.add("blueBackground");
-        }
     }
-}
-
-const showGrid = function(){
-    const gameBoardElem = document.getElementById("gameBoard");
-    gameBoardElem.classList.remove("hidden");
-    const whoseTurnElem = document.getElementById("whoseTurn");
-    whoseTurnElem.classList.add("hidden");
-    const bodyElem = document.getElementById("body");
-    bodyElem.classList.remove("redBackground");
-    bodyElem.classList.remove("blueBackground");
 }
 
 
