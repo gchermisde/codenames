@@ -1,3 +1,8 @@
+#gameBoard {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+}
 
 .grid {
     display: inline-grid;
@@ -89,4 +94,8 @@
 }
 .blueteamWon {
     color: darkblue;
+}
+
+.capitalized {
+    text-transform: capitalize;
 }

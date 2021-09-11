@@ -252,6 +252,10 @@ const startPlay = function(words, colorList) {
     const codeDisplayElem = document.getElementById("codeDisplay");
     hide("codeDisplay");
     show("gameBoard");
+    const myColor = document.getElementById("myColor");
+    myColor.innerHTML = g_gameState.myPlayerColor;
+    const myRole = document.getElementById("myRole");
+    myRole.innerHTML = g_gameState.myPlayerRole;
 
     // --- Set things for THIS player ---
     if (g_gameState.myPlayerRole === "codemaster") {
