@@ -1,8 +1,8 @@
 const webSocketEndpoint = "wss://vo41xadzr9.execute-api.us-east-1.amazonaws.com/production";
 
 const g_gameState = {
-    showingCodemaster: true,
-    currentTeam: "red",
+    currentRole: null, // values: "codemaster", "guesser"
+    currentColor: null, // values: "red", "blue"
     bluesLeft: 8,
     redsLeft: 9,
     assassinsLeft: 1,
@@ -10,8 +10,8 @@ const g_gameState = {
     allowClicks: false,
     clicksDoneThisTurn: 0,
     myPlayerName: null,
-    myPlayerColor: null, // values: "red", "blue"
     myPlayerRole: null, // values: "codemaster", "guesser"
+    myPlayerColor: null, // values: "red", "blue"
 };
 
 const g_setupState = {
@@ -133,13 +133,13 @@ const clickWord = function(cellId){
             g_gameState.clicksDoneThisTurn = g_gameState.clicksDoneThisTurn + 1;
             if (classList.contains('blueteam')) {
                 g_gameState.bluesLeft = g_gameState.bluesLeft - 1;
-                if (g_gameState.currentTeam === "red") {
+                if (g_gameState.currentColor === "red") {
                     g_gameState.allowClicks = false;
                 }
             }
             if (classList.contains('redteam')) {
                 g_gameState.redsLeft = g_gameState.redsLeft - 1;
-                if (g_gameState.currentTeam === "blue") {
+                if (g_gameState.currentColor === "blue") {
                     g_gameState.allowClicks = false;
                 }
             }
@@ -180,7 +180,7 @@ const clickWord = function(cellId){
                 gridElem.classList.add("codemaster");
                 hide("codeDisplay");
                 hide("doneTurnButton");
-                if (g_gameState.currentTeam === "red") {
+                if (g_gameState.currentColor === "red") {
                     show("blueteamWon");
                     const bodyElem = document.getElementById("body");
                     bodyElem.classList.add("blueBackground");
@@ -231,8 +231,8 @@ const startPlay = function(words, colorList) {
     g_gameState.bluesLeft = 8;
     g_gameState.redsLeft = 9;
     g_gameState.assassinsLeft = 1;
-    g_gameState.showingCodemaster = true;
-    g_gameState.currentTeam = "red";
+    g_gameState.currentRole = "codemaster";
+    g_gameState.currentColor = "red";
     const bodyElem = document.getElementById("body");
     bodyElem.classList.remove("redBackground");
     bodyElem.classList.remove("blueBackground");
@@ -246,7 +246,7 @@ const startPlay = function(words, colorList) {
     whoseTurnRoleElem.innerHTML = "Codemaster";
     const whoseTurnColorElem = document.getElementById("whoseTurnColor");
     whoseTurnColorElem.innerHTML = "Red";
-    g_gameState.currentTeam = "red";
+    g_gameState.currentColor = "red";
     hide("codeDisplay");
     show("gameBoard");
     const myColor = document.getElementById("myColor");
@@ -268,7 +268,7 @@ const startPlay = function(words, colorList) {
 }
 
 
-function switchTurn() {
+function switchTurn(message) {
     const gridElem = document.getElementById("grid");
     const codeEntryWordElem = document.getElementById("codeEntryWord");
     const codeEntryNumberElem = document.getElementById("codeEntryNumber");
@@ -276,27 +276,19 @@ function switchTurn() {
     const codeDisplayNumberElem = document.getElementById("codeDisplayNumber");
     const whoseTurnRoleElem = document.getElementById("whoseTurnRole");
     const whoseTurnColorElem = document.getElementById("whoseTurnColor");
-    if (g_gameState.showingCodemaster) {
+    if (g_gameState.currentRole === "codemaster") {
         // from codemaster to guesser
         g_gameState.clicksDoneThisTurn = 0;
-        if (
-            (codeEntryWordElem !== null && codeEntryWordElem.value === "")||
-            (codeEntryNumberElem !== null && codeEntryNumberElem.value === "")
-        ) {
-            show("mustEnterMessage");
-        } else {
-            gridElem.classList.remove("codemaster");
-            hide("mustEnterMessage");
-            hide("codeEntry");
-            show("codeDisplay");
-            codeDisplayWordElem.innerHTML = codeEntryWordElem.value;
-            codeDisplayNumberElem.innerHTML = codeEntryNumberElem.value;
-            whoseTurnRoleElem.innerHTML = "Guesser";
-            g_gameState.showingCodemaster = false;
-            g_gameState.allowClicks = true;
-            //does the actual stuff of switching
-            hide("gameBoard");
-        }
+        hide("mustEnterMessage");
+        hide("codeEntry");
+        show("codeDisplay");
+        codeDisplayWordElem.innerHTML = message.data.codeEntryWord;
+        codeDisplayNumberElem.innerHTML = message.data.codeEntryNumber;
+        whoseTurnRoleElem.innerHTML = "Guesser";
+        g_gameState.currentRole = "guesser";
+        g_gameState.allowClicks = true;
+        //does the actual stuff of switching
+        hide("gameBoard");
     } else {
         // from guesser to codemaster
         gridElem.classList.add("codemaster");
@@ -305,14 +297,14 @@ function switchTurn() {
         codeEntryWordElem.value = "";
         codeEntryNumberElem.value = "";
         whoseTurnRoleElem.innerHTML = "Codemaster";
-        if (g_gameState.currentTeam === "red") {
+        if (g_gameState.currentColor === "red") {
             whoseTurnColorElem.innerHTML = "Blue";
-            g_gameState.currentTeam = "blue";
+            g_gameState.currentColor = "blue";
         } else {
             whoseTurnColorElem.innerHTML = "Red";
-            g_gameState.currentTeam = "red";
+            g_gameState.currentColor = "red";
         }
-        g_gameState.showingCodemaster = true;
+        g_gameState.currentRole = "codemaster";
         g_gameState.allowClicks = false;
     }
 }
@@ -383,6 +375,8 @@ window.addEventListener("load", function() {
             if (message.trigger === "messageSent") {
                 if (message.data.messageType === "chooseWordsAndColors") {
                     onChooseWordsAndColors(message);
+                } else if (message.data.messageType === "doneCodemasterTurn") {
+                    switchTurn(message);
                 }
             }
         }
@@ -396,6 +390,33 @@ window.addEventListener("load", function() {
         //section that creates websocket
         g_webSocket = new WebSocket(webSocketEndpoint);
         g_webSocket.onmessage = onGetMessage;
+
+        const clickedDoneTurn = function() {
+            let jsonMessage;
+            if (g_gameState.myPlayerRole === "codemaster") {
+                const codeEntryWordElem = document.getElementById("codeEntryWord");
+                const codeEntryNumberElem = document.getElementById("codeEntryNumber");
+                if (codeEntryWordElem.value === "" || codeEntryNumberElem.value === "") {
+                    show("mustEnterMessage");
+                    return;
+                } else {
+                    const codeEntryWordElem = document.getElementById("codeEntryWord");
+                    const codeEntryNumberElem = document.getElementById("codeEntryNumber");
+                    jsonMessage = {messageType: "doneCodemasterTurn", codeEntryWord: codeEntryWordElem.value, codeEntryNumber: codeEntryNumberElem.value};
+                }
+            } else {
+                jsonMessage = {messageType: "doneGuesserTurn"};
+            }
+            //sending a message
+            const fullMessage = {action: "sendMessage", "data": jsonMessage};
+            const messageText = JSON.stringify(fullMessage);
+            console.log(`Sending "${messageText}"`);
+            g_webSocket.send(messageText);
+
+            switchTurn(fullMessage);
+        }
+        const doneTurnButtonElem = document.getElementById("doneTurnButton");
+        doneTurnButtonElem.onclick = clickedDoneTurn;
 
         const readyToPlayButtonElem = document.getElementById("readyToPlayButton");
         const clickedReadyToPlay = function() {
