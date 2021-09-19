@@ -171,7 +171,6 @@ const clickWord = function(cellId){
             if (g_gameState.redsLeft === 0){
                 hide("doneTurnButton");
                 hide("codeDisplay");
-                const redteamWonElem = document.getElementById("redteamWon");
                 show("redTeamWon");
                 gridElem.classList.add("codemaster");
                 const bodyElem = document.getElementById("body");
@@ -228,7 +227,6 @@ const startPlay = function(words, colorList) {
             document.getElementById(box).classList.remove('revealed');
         }
     }
-    const gameRoomElem = document.getElementById("gameRoom");
     show("gameRoom");
     g_gameState.bluesLeft = 8;
     g_gameState.redsLeft = 9;
@@ -249,7 +247,6 @@ const startPlay = function(words, colorList) {
     const whoseTurnColorElem = document.getElementById("whoseTurnColor");
     whoseTurnColorElem.innerHTML = "Red";
     g_gameState.currentTeam = "red";
-    const codeDisplayElem = document.getElementById("codeDisplay");
     hide("codeDisplay");
     show("gameBoard");
     const myColor = document.getElementById("myColor");
@@ -261,12 +258,12 @@ const startPlay = function(words, colorList) {
     if (g_gameState.myPlayerRole === "codemaster") {
         const gridElem = document.getElementById("grid");
         gridElem.classList.add("codemaster");
-    } else {
-        const codeEntryElem = document.getElementById("codeEntry");
-        hide("codeEntry");
     }
     if (g_gameState.myPlayerColor === "red" && g_gameState.myPlayerRole === "codemaster") {
         show("doneTurnButton");
+        show("codeEntry");
+    } else {
+        hide("codeEntry");
     }
 }
 
@@ -279,7 +276,6 @@ function switchTurn() {
     const codeDisplayNumberElem = document.getElementById("codeDisplayNumber");
     const whoseTurnRoleElem = document.getElementById("whoseTurnRole");
     const whoseTurnColorElem = document.getElementById("whoseTurnColor");
-    const bodyElem = document.getElementById("body");
     if (g_gameState.showingCodemaster) {
         // from codemaster to guesser
         g_gameState.clicksDoneThisTurn = 0;
@@ -433,7 +429,7 @@ window.addEventListener("load", function() {
         }
         joinGameButtonElem.onclick = onJoinGame;
         joinGameButtonElem.disabled = false;
-    };
+    }
 
     // make whos turn it is, blue of red
 
