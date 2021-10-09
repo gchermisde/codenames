@@ -126,31 +126,49 @@ const chooseColors = function() {
 };
 
 
+const onWordClicked = function(message) {
+    const classList = document.getElementById(message.data.cellId).classList;
+    if (classList.contains('blueteam')) {
+        g_gameState.bluesLeft = g_gameState.bluesLeft - 1;
+        if (g_gameState.currentColor === "red") {
+            g_gameState.allowClicks = false;
+        }
+    }
+    if (classList.contains('redteam')) {
+        g_gameState.redsLeft = g_gameState.redsLeft - 1;
+        if (g_gameState.currentColor === "blue") {
+            g_gameState.allowClicks = false;
+        }
+    }
+    if (classList.contains('innocent')) {
+        g_gameState.allowClicks = false;
+    }
+    if (classList.contains('assassin')) {
+        g_gameState.assassinsLeft = g_gameState.assassinsLeft - 1;
+        g_gameState.allowClicks = false;
+    }
+    classList.add("revealed");
+}
+
+
+
+/**
+ * See if the click is allowed. If it is, then send a "wordClicked" message to the other players
+ * and then call onWordClicked to update the screen.
+ */
 const clickWord = function(cellId){
     if (g_gameState.allowClicks === true) {
         const classList = document.getElementById(cellId).classList;
         if (!classList.contains('revealed')){
             g_gameState.clicksDoneThisTurn = g_gameState.clicksDoneThisTurn + 1;
-            if (classList.contains('blueteam')) {
-                g_gameState.bluesLeft = g_gameState.bluesLeft - 1;
-                if (g_gameState.currentColor === "red") {
-                    g_gameState.allowClicks = false;
-                }
-            }
-            if (classList.contains('redteam')) {
-                g_gameState.redsLeft = g_gameState.redsLeft - 1;
-                if (g_gameState.currentColor === "blue") {
-                    g_gameState.allowClicks = false;
-                }
-            }
-            if (classList.contains('innocent')) {
-                g_gameState.allowClicks = false;
-            }
-            if (classList.contains('assassin')) {
-                g_gameState.assassinsLeft = g_gameState.assassinsLeft - 1;
-                g_gameState.allowClicks = false;
-            }
-            classList.add("revealed");
+            //sending message here
+            const jsonMessage = {messageType: "wordClicked", cellId: cellId};
+            const fullMessage = {action: "sendMessage", "data": jsonMessage};
+            const messageText = JSON.stringify(fullMessage);
+            console.log(`Sending "${messageText}"`);
+            g_webSocket.send(messageText);
+            //calling onWordClicked
+            onWordClicked(fullMessage);
             //decide if we've clicked enough times//
             const numberElem = document.getElementById("codeEntryNumber");
             const numberString = numberElem.value;
@@ -159,6 +177,7 @@ const clickWord = function(cellId){
                 g_gameState.allowClicks = false;
             }
             //is game over check//
+            //FIXME need to send game ended message
             const gridElem = document.getElementById("grid");
             if (g_gameState.bluesLeft === 0){
                 hide("doneTurnButton");
@@ -267,7 +286,7 @@ const startPlay = function(words, colorList) {
     }
 }
 
-
+// this is called to prepare for a new turn, message is sent when someone ends their turn
 function switchTurn(message) {
     const gridElem = document.getElementById("grid");
     const codeEntryWordElem = document.getElementById("codeEntryWord");
@@ -278,24 +297,20 @@ function switchTurn(message) {
     const whoseTurnColorElem = document.getElementById("whoseTurnColor");
     if (g_gameState.currentRole === "codemaster") {
         // from codemaster to guesser
+        g_gameState.currentRole = "guesser";
+        whoseTurnRoleElem.innerHTML = "Guesser";
         g_gameState.clicksDoneThisTurn = 0;
         hide("mustEnterMessage");
         hide("codeEntry");
         show("codeDisplay");
         codeDisplayWordElem.innerHTML = message.data.codeEntryWord;
         codeDisplayNumberElem.innerHTML = message.data.codeEntryNumber;
-        whoseTurnRoleElem.innerHTML = "Guesser";
-        g_gameState.currentRole = "guesser";
-        g_gameState.allowClicks = true;
-        //does the actual stuff of switching
-        hide("gameBoard");
+        if (g_gameState.myPlayerRole === "guesser" && g_gameState.myPlayerColor === g_gameState.currentColor) {
+            g_gameState.allowClicks = true;
+        }
     } else {
         // from guesser to codemaster
-        gridElem.classList.add("codemaster");
-        show("codeEntry");
-        hide("codeDisplay");
-        codeEntryWordElem.value = "";
-        codeEntryNumberElem.value = "";
+        g_gameState.currentRole = "codemaster";
         whoseTurnRoleElem.innerHTML = "Codemaster";
         if (g_gameState.currentColor === "red") {
             whoseTurnColorElem.innerHTML = "Blue";
@@ -304,8 +319,13 @@ function switchTurn(message) {
             whoseTurnColorElem.innerHTML = "Red";
             g_gameState.currentColor = "red";
         }
-        g_gameState.currentRole = "codemaster";
+        hide("codeDisplay");
+        codeEntryWordElem.value = "";
+        codeEntryNumberElem.value = "";
         g_gameState.allowClicks = false;
+        if (g_gameState.myPlayerRole === "codemaster" && g_gameState.myPlayerColor === g_gameState.currentColor) {
+            show("codeEntry");
+        }
     }
 }
 
@@ -358,6 +378,7 @@ const onChooseWordsAndColors = function(message) {
 
 
 window.addEventListener("load", function() {
+    //distributor, dispatcher function
     const onGetMessage = function(event) {
         const message = JSON.parse(event.data);
         console.log("received", message);
@@ -377,6 +398,8 @@ window.addEventListener("load", function() {
                     onChooseWordsAndColors(message);
                 } else if (message.data.messageType === "doneCodemasterTurn") {
                     switchTurn(message);
+                } else if(message.data.messageType === "wordClicked") {
+                    onWordClicked(message);
                 }
             }
         }
